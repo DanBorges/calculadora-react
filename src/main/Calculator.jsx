@@ -5,29 +5,108 @@ import Button from '../componnets/Button'
 import Display from '../componnets/Display';
 
 
+const initialState = {
+    displayValue: '0',
+    clearDisplay: false,
+    operation: null,
+    values: [0, 0],
+    current: 0
+}
+
 export default class Calculadora extends Component {
+
+    state = {
+        ...initialState   
+    }
+
+    constructor(props) {
+        super(props);
+        this.clearMemory = this.clearMemory.bind(this);
+        this.setOperation = this.setOperation.bind(this);
+        this.addDigito = this.addDigito.bind(this);
+
+    }
+
+
+    clearMemory() {
+        this.setState({...initialState})
+        console.log('limpar')
+    }
+
+    setOperation(operation) {
+        if (this.state.current === 0 ) {
+             this.setState( { operation, current: 1, clearDisplay:true } )
+        } else {
+            const equals = operation  === '='
+            const currentOperation = this.state.operation;
+            const values = [...this.state.values]
+            console.log('operation', currentOperation);
+            try {
+
+                values[0] = eval(`${values[0]} ${currentOperation} ${values[1]}`)
+            } catch(e) {
+                console.log('entrou no catch', e)
+                values[0] = this.state.values[0]
+            }
+            values[1] = 0
+            this.setState(
+                {
+                    displayValue: values[0],
+                    operation: equals ? null : operation,
+                    current: equals ? 0 : 1,
+                    clearDisplay: !equals,
+                    values
+                }
+            )
+        }
+        console.log(operation)
+    }
+
+    addDigito(digito) {
+        if (digito === '.' && this.state.displayValue.includes('.')) {
+            return;
+        }
+
+        const clearDisplay = this.state.displayValue === '0'
+            || this.state.clearDisplay
+        const currentValue = clearDisplay ? '' : this.state.displayValue
+        const displayValue = currentValue + digito
+        this.setState({displayValue, clearDisplay: false})
+
+        if (digito !== '.') {
+            const i = this.state.current
+            const newValue = parseFloat(displayValue)
+            const values = [...this.state.values]
+            values[i] = newValue
+            this.setState({ values })
+        }
+        // console.log(values)
+
+        console.log(digito)
+    }
+
+
     render() {
         return (
             <div className="calculator">
-                <Display value ={100}/>
-                <Button label="AC"/>
-                <Button label="/"/>
-                <Button label="7"/>
-                <Button label="8"/>
-                <Button label="9"/>
-                <Button label="*"/>
-                <Button label="4"/>
-                <Button label="5"/>
-                <Button label="6"/>
-                <Button label="-"/>
-                <Button label="1"/>
-                <Button label="2"/>
-                <Button label="3"/>
-                <Button label="+"/>
-                <Button label="0"/>
-                <Button label="."/>
-                <Button label="="/>
-
+                <Display value ={this.state.displayValue}/>
+                <Button label="AC" click ={this.clearMemory} triple/>
+                <Button label="/" click={this.setOperation} operation/>
+                <Button label="7" click={this.addDigito} />
+                <Button label="8" click={this.addDigito}/>
+                <Button label="9" click={this.addDigito}/>
+                <Button label="*" click={this.setOperation} operation/>
+                <Button label="4" click={this.addDigito}/>
+                <Button label="5" click={this.addDigito}/>
+                <Button label="6" click={this.addDigito}/>
+                <Button label="-" click={this.setOperation} operation/>
+                <Button label="1" click={this.addDigito}/>
+                <Button label="2" click={this.addDigito}/>
+                <Button label="3" click={this.addDigito}/>
+                <Button label="+" click={this.setOperation} operation/>
+                <Button label="0" click={this.addDigito}/>
+                <Button label="." click={this.addDigito} double/>
+                <Button label="=" click={this.setOperation} operation/>
             </div>
         )
     }
